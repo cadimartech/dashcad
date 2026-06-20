@@ -39,3 +39,27 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# CAD / Vault data (user parts - do not commit)
+catalog/
+
+# OCCT WASM (downloaded at runtime or install)
+public/wasm/
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Research / temporary notes
+research.md
+
+# Large binary artifacts
+*.glb
+*.step
+*.stp
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
