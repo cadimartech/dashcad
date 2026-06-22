@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  dashcad:
+    build: .
+    container_name: dashcad
+    ports:
+      - "3000:3000"
+    volumes:
+      # Persistir el catálogo de piezas
+      - catalog_data:/app/catalog
+    environment:
+      - NODE_ENV=production
+      # Variables opcionales para personalizar
+      # - DASHCAD_CATALOG_PATH=/app/catalog/parts.json
+      # - MAX_UPLOAD_SIZE=10485760
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  catalog_data:
+    driver: local
