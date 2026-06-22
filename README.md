@@ -41,65 +41,84 @@ npm run dev
 
 ### Docker
 
-#### Opción 1: Docker Compose (Recomendado)
+#### Opción 1: Docker Compose (local o NAS con build)
 
 ```bash
-# Construir y levantar el contenedor
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-
-# Detener
-docker-compose down
+mkdir -p data/catalog
+docker compose up -d --build
+docker compose logs -f
+docker compose down
 ```
 
-El catálogo se persiste en un volumen Docker llamado `catalog_data`.
+Los datos del catálogo se guardan en `./data/catalog` (configurable con `DASHCAD_DATA_PATH` en `.env`).
 
-#### Opción 2: Docker directo
+#### Opción 2: NAS (Synology, ZimaOS, etc.) — sin compilar en el NAS
+
+En tu PC (donde tienes el código):
 
 ```bash
-# Construir la imagen
-docker build -t dashcad .
+cp .env.example .env
+# Edita .env si quieres otro puerto o ruta de datos
 
-# Ejecutar con volumen para persistencia
+./scripts/docker-export-for-nas.sh
+# Genera dashcad-image.tar en la raíz del proyecto
+```
+
+Sube al NAS (File Station, SMB o SCP):
+
+- `dashcad-image.tar`
+- `docker-compose.nas.yml`
+- `.env` (copia de `.env.example` con tus valores)
+
+En el NAS por SSH o terminal del Container Manager:
+
+```bash
+cd /ruta/donde/subiste/los/archivos
+docker load -i dashcad-image.tar
+mkdir -p data/catalog
+docker compose -f docker-compose.nas.yml up -d
+```
+
+Abre `http://IP-DEL-NAS:3000` (o el puerto que pusiste en `DASHCAD_PORT`).
+
+**Synology Container Manager (GUI):** Imagen → Importar → `dashcad-image.tar`. Luego Proyecto → Crear → pegar `docker-compose.nas.yml` o crear contenedor manualmente: imagen `dashcad:latest`, puerto `3000`, volumen carpeta local `data/catalog` → `/app/catalog`.
+
+**Ruta de datos en NAS:** en `.env` puedes usar una ruta absoluta, por ejemplo:
+
+```env
+DASHCAD_DATA_PATH=/volume1/docker/dashcad/data/catalog
+```
+
+#### Opción 3: Docker directo
+
+```bash
+docker build -t dashcad:latest .
 docker run -d \
   --name dashcad \
   -p 3000:3000 \
-  -v dashcad-catalog:/app/catalog \
-  dashcad
-
-# Ver logs
-docker logs -f dashcad
-
-# Detener
-docker stop dashcad
+  -v "$(pwd)/data/catalog:/app/catalog" \
+  --restart unless-stopped \
+  dashcad:latest
 ```
 
 #### Variables de entorno
 
-Copia `.env.example` a `.env` y ajusta según necesites:
+Copia `.env.example` a `.env`:
 
 ```bash
 cp .env.example .env
 ```
 
-Variables disponibles:
-- `PORT` - Puerto del servidor (default: 3000)
-- `DASHCAD_CATALOG_PATH` - Ruta del catálogo (default: /app/catalog/parts.json)
-- `MAX_UPLOAD_SIZE` - Tamaño máximo de upload en bytes (default: 10485760)
+| Variable | Descripción |
+|---|---|
+| `DASHCAD_PORT` | Puerto en el host (default: `3000`) |
+| `DASHCAD_DATA_PATH` | Carpeta del catálogo en el host (default: `./data/catalog`) |
+| `DASHCAD_CATALOG_PATH` | Ruta del JSON dentro del contenedor (default: `/app/catalog/parts.json`) |
+| `MAX_UPLOAD_SIZE` | Tamaño máximo de upload en bytes (default: 10MB) |
 
-#### Persistencia de datos
+#### Health check
 
-Los datos del catálogo (archivos STEP, GLB, thumbnails y parts.json) se almacenan en `/app/catalog` dentro del contenedor. Usa volúmenes Docker para persistir estos datos:
-
-```bash
-# Con docker-compose (automático)
-docker-compose up -d
-
-# Con docker run manual
-docker run -d -v /ruta/local/catalog:/app/catalog dashcad
-```
+El contenedor comprueba `GET /api/health`. Si el healthcheck falla en el NAS, revisa que el puerto no esté ocupado y que `data/catalog` sea escribible por el contenedor.
 
 ## Scripts
 
