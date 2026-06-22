@@ -1,11 +1,19 @@
+# Despliegue en NAS (Synology, ZimaOS, etc.)
+# No compila en el NAS: importa la imagen con scripts/docker-export-for-nas.sh
+#
+# Uso en el NAS:
+#   1. Copia esta carpeta al NAS (sin node_modules ni .next)
+#   2. Importa dashcad-image.tar con Container Manager o: docker load -i dashcad-image.tar
+#   3. docker compose -f docker-compose.nas.yml up -d
+#
 services:
   dashcad:
-    build: .
     image: dashcad:latest
     container_name: dashcad
     ports:
       - "${DASHCAD_PORT:-3000}:3000"
     volumes:
+      # Ruta en el NAS; ajusta DASHCAD_DATA_PATH en .env si hace falta
       - ${DASHCAD_DATA_PATH:-./data/catalog}:/app/catalog
     environment:
       - NODE_ENV=production
