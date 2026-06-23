@@ -41,7 +41,43 @@ npm run dev
 
 ### Docker
 
-#### Opción 1: Docker Compose (local o NAS con build)
+#### Opción 1: Desde GitHub Container Registry (Recomendado para NAS)
+
+La imagen se publica automáticamente en `ghcr.io/cadimartech/dashcad` cada vez que haces push a `main`.
+
+**En tu NAS (Synology, ZimaOS, etc.):**
+
+1. Autenticarse en GitHub Container Registry (solo la primera vez):
+
+```bash
+docker login ghcr.io -u TU_USUARIO_GITHUB
+```
+
+Usa tu token de GitHub con permisos `read:packages`.
+
+2. Crear carpeta de datos:
+
+```bash
+mkdir -p data/catalog
+```
+
+3. Desplegar con Docker Compose:
+
+```bash
+docker compose -f docker-compose.nas.yml pull
+docker compose -f docker-compose.nas.yml up -d
+```
+
+Abre `http://IP-DEL-NAS:3000`.
+
+**Para actualizar:**
+
+```bash
+docker compose -f docker-compose.nas.yml pull
+docker compose -f docker-compose.nas.yml up -d
+```
+
+#### Opción 2: Docker Compose local (con build)
 
 ```bash
 mkdir -p data/catalog
@@ -52,44 +88,22 @@ docker compose down
 
 Los datos del catálogo se guardan en `./data/catalog` (configurable con `DASHCAD_DATA_PATH` en `.env`).
 
-#### Opción 2: NAS (Synology, ZimaOS, etc.) — sin compilar en el NAS
+#### Opción 3: Exportar imagen manualmente (sin GitHub Actions)
 
-En tu PC (donde tienes el código):
+Si no quieres usar GitHub Actions, puedes construir y exportar la imagen localmente:
 
 ```bash
-cp .env.example .env
-# Edita .env si quieres otro puerto o ruta de datos
-
 ./scripts/docker-export-for-nas.sh
-# Genera dashcad-image.tar en la raíz del proyecto
 ```
 
-Sube al NAS (File Station, SMB o SCP):
-
-- `dashcad-image.tar`
-- `docker-compose.nas.yml`
-- `.env` (copia de `.env.example` con tus valores)
-
-En el NAS por SSH o terminal del Container Manager:
+Esto genera `dashcad-image.tar`. Súbela al NAS y cárgala:
 
 ```bash
-cd /ruta/donde/subiste/los/archivos
 docker load -i dashcad-image.tar
-mkdir -p data/catalog
 docker compose -f docker-compose.nas.yml up -d
 ```
 
-Abre `http://IP-DEL-NAS:3000` (o el puerto que pusiste en `DASHCAD_PORT`).
-
-**Synology Container Manager (GUI):** Imagen → Importar → `dashcad-image.tar`. Luego Proyecto → Crear → pegar `docker-compose.nas.yml` o crear contenedor manualmente: imagen `dashcad:latest`, puerto `3000`, volumen carpeta local `data/catalog` → `/app/catalog`.
-
-**Ruta de datos en NAS:** en `.env` puedes usar una ruta absoluta, por ejemplo:
-
-```env
-DASHCAD_DATA_PATH=/volume1/docker/dashcad/data/catalog
-```
-
-#### Opción 3: Docker directo
+#### Opción 4: Docker directo
 
 ```bash
 docker build -t dashcad:latest .

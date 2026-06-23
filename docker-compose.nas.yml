@@ -1,25 +1,21 @@
 # Despliegue en NAS (Synology, ZimaOS, etc.)
-# No compila en el NAS: importa la imagen con scripts/docker-export-for-nas.sh
+# La imagen se publica automáticamente en ghcr.io desde GitHub Actions
 #
 # Uso en el NAS:
-#   1. Copia esta carpeta al NAS (sin node_modules ni .next)
-#   2. Importa dashcad-image.tar con Container Manager o: docker load -i dashcad-image.tar
+#   1. docker login ghcr.io (con tu token de GitHub)
+#   2. docker compose -f docker-compose.nas.yml pull
 #   3. docker compose -f docker-compose.nas.yml up -d
 #
 services:
   dashcad:
-    image: dashcad:latest
+    image: ghcr.io/cadimartech/dashcad:latest
     container_name: dashcad
     ports:
-      - "${DASHCAD_PORT:-3000}:3000"
+      - "3000:3000"
     volumes:
-      # Ruta en el NAS; ajusta DASHCAD_DATA_PATH en .env si hace falta
-      - ${DASHCAD_DATA_PATH:-./data/catalog}:/app/catalog
+      - /ZimaOS-HD/AppData/dashcad/data/catalog:/app/catalog
     environment:
       - NODE_ENV=production
-    env_file:
-      - path: .env
-        required: false
     restart: unless-stopped
     healthcheck:
       test:
