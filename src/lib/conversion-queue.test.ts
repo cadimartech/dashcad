@@ -29,6 +29,7 @@ describe("conversion queue", () => {
 	let catalogPath: string;
 	let stepDir: string;
 	let previousCatalogEnv: string | undefined;
+	let previousFilesEnv: string | undefined;
 
 	beforeEach(() => {
 		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "dashcad-conv-"));
@@ -43,7 +44,9 @@ describe("conversion queue", () => {
 		);
 
 		previousCatalogEnv = process.env.DASHCAD_CATALOG_PATH;
+		previousFilesEnv = process.env.DASHCAD_FILES_PATH;
 		process.env.DASHCAD_CATALOG_PATH = catalogPath;
+		delete process.env.DASHCAD_FILES_PATH;
 		vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
 
 		stepToGlbMock.mockReset();
@@ -60,6 +63,11 @@ describe("conversion queue", () => {
 			delete process.env.DASHCAD_CATALOG_PATH;
 		} else {
 			process.env.DASHCAD_CATALOG_PATH = previousCatalogEnv;
+		}
+		if (previousFilesEnv === undefined) {
+			delete process.env.DASHCAD_FILES_PATH;
+		} else {
+			process.env.DASHCAD_FILES_PATH = previousFilesEnv;
 		}
 		fs.rmSync(tmpDir, { recursive: true, force: true });
 		vi.resetModules();
@@ -104,5 +112,37 @@ describe("conversion queue", () => {
 		const part = getPart(samplePart.id);
 		expect(part?.conversionStatus).toBe("failed");
 		expect(part?.conversionError).toContain("no geometry");
+	});
+
+	it("writes GLB to DASHCAD_FILES_PATH when set", async () => {
+		const filesRoot = path.join(tmpDir, "files");
+		process.env.DASHCAD_FILES_PATH = filesRoot;
+		fs.mkdirSync(path.join(filesRoot, "step"), { recursive: true });
+		fs.writeFileSync(
+			path.join(filesRoot, "step", samplePart.filename),
+			"fake-step",
+			"utf-8",
+		);
+		vi.resetModules();
+
+		const { addPart } = await import("./parts");
+		const {
+			enqueuePartConversion,
+			drainConversionQueueForTests,
+			resetConversionQueueForTests,
+		} = await import("./conversion-queue");
+
+		resetConversionQueueForTests();
+		addPart(samplePart);
+		enqueuePartConversion(samplePart.id);
+		await drainConversionQueueForTests();
+
+		const decoupledGlb = path.join(filesRoot, "glb", `${samplePart.id}.glb`);
+		expect(fs.existsSync(decoupledGlb)).toBe(true);
+		expect(
+			fs.existsSync(
+				path.join(tmpDir, "catalog", "glb", `${samplePart.id}.glb`),
+			),
+		).toBe(false);
 	});
 });

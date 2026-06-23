@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { GLB_DIR } from "@/lib/paths";
 import { isSafeGlbFilename } from "@/lib/upload-validation";
-
-const GLB_DIR = path.join(process.cwd(), "catalog", "glb");
 
 export async function GET(
 	_request: NextRequest,

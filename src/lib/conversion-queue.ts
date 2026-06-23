@@ -2,10 +2,8 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import { getPart, getParts, updatePart } from "@/lib/parts";
+import { GLB_DIR, STEP_DIR } from "@/lib/paths";
 import { stepToGlb } from "@/lib/step-converter";
-
-const GLB_DIR = path.join(process.cwd(), "catalog", "glb");
-const STEP_DIR = path.join(process.cwd(), "catalog", "step");
 
 const queue: string[] = [];
 const queued = new Set<string>();

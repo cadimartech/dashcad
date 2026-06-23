@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { THUMB_DIR } from "@/lib/paths";
 import { isSafeThumbFilename } from "@/lib/upload-validation";
-
-const THUMB_DIR = path.join(process.cwd(), "catalog", "thumb");
 
 export async function GET(
 	_request: NextRequest,

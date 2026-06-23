@@ -34,9 +34,9 @@ ENV HOSTNAME="0.0.0.0"
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Crear directorios para el catálogo con permisos correctos
-RUN mkdir -p /app/catalog/step /app/catalog/glb /app/catalog/thumb && \
-    chown -R nextjs:nodejs /app/catalog
+# Crear directorios para el catálogo y los archivos con permisos correctos
+RUN mkdir -p /app/catalog /app/files/step /app/files/glb /app/files/thumb && \
+    chown -R nextjs:nodejs /app/catalog /app/files
 
 # Copiar standalone build desde builder
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

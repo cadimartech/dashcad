@@ -1,9 +1,8 @@
 import "server-only";
 import fs from "fs";
 import path from "path";
+import { GLB_DIR } from "@/lib/paths";
 import type { CadPart, ConversionStatus } from "@/types/part";
-
-const GLB_DIR = path.join(process.cwd(), "catalog", "glb");
 
 /** Resolve status for API/UI; legacy parts without a field infer from GLB on disk. */
 export function resolveConversionStatus(

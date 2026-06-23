@@ -27,9 +27,13 @@ import { getOcctDistDir } from "../src/lib/occt-runtime";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const CATALOG_PATH = path.join(ROOT, "catalog", "parts.json");
-const STEP_DIR = path.join(ROOT, "catalog", "step");
-const GLB_DIR = path.join(ROOT, "catalog", "glb");
+const CATALOG_PATH =
+	process.env.DASHCAD_CATALOG_PATH ??
+	path.join(ROOT, "catalog", "parts.json");
+const FILES_ROOT =
+	process.env.DASHCAD_FILES_PATH ?? path.join(ROOT, "catalog");
+const STEP_DIR = path.join(FILES_ROOT, "step");
+const GLB_DIR = path.join(FILES_ROOT, "glb");
 
 const args = process.argv.slice(2);
 const force = args.includes("--force");

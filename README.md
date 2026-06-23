@@ -86,7 +86,7 @@ docker compose logs -f
 docker compose down
 ```
 
-Los datos del catálogo se guardan en `./data/catalog` (configurable con `DASHCAD_DATA_PATH` en `.env`).
+Los datos del catálogo se guardan en `./data/catalog` (solo `parts.json`, configurable con `DASHCAD_DATA_PATH`). Los archivos binarios (STEP, GLB, thumbnails) se guardan en `./data/files` (configurable con `DASHCAD_FILES_PATH`). Mantenerlos en carpetas separadas permite montar el catálogo y los archivos en volúmenes, discos o servicios de almacenamiento distintos.
 
 #### Opción 3: Exportar imagen manualmente (sin GitHub Actions)
 
@@ -126,8 +126,9 @@ cp .env.example .env
 | Variable | Descripción |
 |---|---|
 | `DASHCAD_PORT` | Puerto en el host (default: `3000`) |
-| `DASHCAD_DATA_PATH` | Carpeta del catálogo en el host (default: `./data/catalog`) |
+| `DASHCAD_DATA_PATH` | Carpeta del catálogo (solo `parts.json`) en el host (default: `./data/catalog`) |
 | `DASHCAD_CATALOG_PATH` | Ruta del JSON dentro del contenedor (default: `/app/catalog/parts.json`) |
+| `DASHCAD_FILES_PATH` | Carpeta de archivos binarios (STEP, GLB, thumbnails) en el host. Si no se define, cae en `<DASHCAD_DATA_PATH>` (comportamiento retrocompatible). |
 | `MAX_UPLOAD_SIZE` | Tamaño máximo de upload en bytes (default: 10MB) |
 
 #### Health check

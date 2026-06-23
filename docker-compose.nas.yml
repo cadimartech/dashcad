@@ -14,6 +14,7 @@ services:
       - "3000:3000"
     volumes:
       - /ZimaOS-HD/AppData/dashcad/data/catalog:/app/catalog
+      - /ZimaOS-HD/AppData/dashcad/data/files:/app/files
     environment:
       - NODE_ENV=production
     restart: unless-stopped

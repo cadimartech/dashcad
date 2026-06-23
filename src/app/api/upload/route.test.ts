@@ -53,6 +53,7 @@ describe("POST /api/upload", () => {
 	let tmpDir: string;
 	let catalogPath: string;
 	let previousCatalogEnv: string | undefined;
+	let previousFilesEnv: string | undefined;
 
 	beforeEach(() => {
 		tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "dashcad-upload-"));
@@ -60,7 +61,9 @@ describe("POST /api/upload", () => {
 		fs.writeFileSync(catalogPath, JSON.stringify({ parts: [] }), "utf-8");
 
 		previousCatalogEnv = process.env.DASHCAD_CATALOG_PATH;
+		previousFilesEnv = process.env.DASHCAD_FILES_PATH;
 		process.env.DASHCAD_CATALOG_PATH = catalogPath;
+		delete process.env.DASHCAD_FILES_PATH;
 		vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
 
 		enqueuePartConversionMock.mockReset();
@@ -74,6 +77,11 @@ describe("POST /api/upload", () => {
 			delete process.env.DASHCAD_CATALOG_PATH;
 		} else {
 			process.env.DASHCAD_CATALOG_PATH = previousCatalogEnv;
+		}
+		if (previousFilesEnv === undefined) {
+			delete process.env.DASHCAD_FILES_PATH;
+		} else {
+			process.env.DASHCAD_FILES_PATH = previousFilesEnv;
 		}
 		fs.rmSync(tmpDir, { recursive: true, force: true });
 		vi.resetModules();
@@ -140,5 +148,28 @@ describe("POST /api/upload", () => {
 		const body = (await res.json()) as { error: string };
 		expect(body.error).toMatch(/STEP/i);
 		expect(enqueuePartConversionMock).not.toHaveBeenCalled();
+	});
+
+	it("writes STEP to DASHCAD_FILES_PATH when set, leaving the catalog untouched", async () => {
+		const filesRoot = path.join(tmpDir, "files");
+		process.env.DASHCAD_FILES_PATH = filesRoot;
+		vi.resetModules();
+
+		const stepBytes = new TextEncoder().encode("ISO-10303-21; decoupled");
+		const { POST } = await import("./route");
+		const res = await POST(
+			makeUploadRequest({
+				file: { name: "decoupled.step", bytes: stepBytes },
+				name: "Decoupled",
+			}),
+		);
+
+		expect(res.status).toBe(200);
+		const body = (await res.json()) as { id: string; filename: string };
+		const decoupledPath = path.join(filesRoot, "step", body.filename);
+		expect(fs.existsSync(decoupledPath)).toBe(true);
+		expect(fs.existsSync(path.join(tmpDir, "catalog", "step", body.filename))).toBe(
+			false,
+		);
 	});
 });

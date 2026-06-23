@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { enqueuePartConversion } from "@/lib/conversion-queue";
 import { addPart, generateId } from "@/lib/parts";
+import { GLB_DIR, STEP_DIR } from "@/lib/paths";
 import {
 	MAX_STEP_BYTES,
 	parseTags,
@@ -11,9 +12,6 @@ import {
 	MAX_DESCRIPTION_LEN,
 	MAX_CATEGORY_LEN,
 } from "@/lib/upload-validation";
-
-const STEP_DIR = path.join(process.cwd(), "catalog", "step");
-const GLB_DIR = path.join(process.cwd(), "catalog", "glb");
 
 export async function POST(request: NextRequest) {
 	try {

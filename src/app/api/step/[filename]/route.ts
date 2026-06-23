@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { STEP_DIR } from "@/lib/paths";
 import { isSafeStepFilename } from "@/lib/upload-validation";
-
-const STEP_DIR = path.join(process.cwd(), "catalog", "step");
 
 export async function GET(
 	_request: NextRequest,

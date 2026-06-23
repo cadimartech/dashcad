@@ -3,11 +3,11 @@ import type { CadPart, ConversionStatus } from "@/types/part";
 import "server-only";
 import fs from "fs";
 import path from "path";
+import { STEP_DIR } from "@/lib/paths";
 
 const CATALOG_DIR = path.join(process.cwd(), "catalog");
 const CATALOG_PATH =
 	process.env.DASHCAD_CATALOG_PATH ?? path.join(CATALOG_DIR, "parts.json");
-const STEP_DIR = path.join(process.cwd(), "catalog", "step");
 
 type CatalogData = {
 	parts: CadPart[];

@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { enrichPartWithResolvedConversionStatus } from "@/lib/conversion-status";
 import { getPart, deletePart, getStepPath, updatePart } from "@/lib/parts";
+import { GLB_DIR, THUMB_DIR } from "@/lib/paths";
 import {
 	isValidPartId,
 	parseTagsArray,
@@ -51,8 +52,7 @@ export async function DELETE(
 	} catch {}
 
 	// Delete associated GLB preview
-	const glbDir = path.join(process.cwd(), "catalog", "glb");
-	const glbPath = path.join(glbDir, `${id}.glb`);
+	const glbPath = path.join(GLB_DIR, `${id}.glb`);
 	try {
 		if (fs.existsSync(glbPath)) {
 			fs.unlinkSync(glbPath);
@@ -61,8 +61,7 @@ export async function DELETE(
 
 	// Delete associated thumbnail
 	if (part.thumbnailFilename) {
-		const thumbDir = path.join(process.cwd(), "catalog", "thumb");
-		const thumbPath = path.join(thumbDir, part.thumbnailFilename);
+		const thumbPath = path.join(THUMB_DIR, part.thumbnailFilename);
 		try {
 			if (fs.existsSync(thumbPath)) {
 				fs.unlinkSync(thumbPath);

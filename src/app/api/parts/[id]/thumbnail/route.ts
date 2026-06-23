@@ -2,13 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { getPart, updatePart } from "@/lib/parts";
+import { THUMB_DIR } from "@/lib/paths";
 import {
 	isValidPartId,
 	THUMBNAIL_EXT,
 	validateThumbnailBytes,
 } from "@/lib/upload-validation";
-
-const THUMB_DIR = path.join(process.cwd(), "catalog", "thumb");
 
 export async function POST(
 	request: NextRequest,
