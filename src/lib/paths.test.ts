@@ -47,4 +47,23 @@ describe("storage paths", () => {
 		expect(GLB_DIR).toBe(path.join(filesRoot, "glb"));
 		expect(THUMB_DIR).toBe(path.join(filesRoot, "thumb"));
 	});
+
+	it("composes child paths via stepPath/glbPath/thumbPath", async () => {
+		const { stepPath, glbPath, thumbPath } = await import("./paths");
+		const file = "abc1234567.step";
+		expect(stepPath(file)).toMatch(/[\\/]step[\\/]abc1234567\.step$/);
+		expect(glbPath("abc1234567.glb")).toMatch(/[\\/]glb[\\/]abc1234567\.glb$/);
+		expect(thumbPath("abc1234567.png")).toMatch(
+			/[\\/]thumb[\\/]abc1234567\.png$/,
+		);
+	});
+
+	it("normalizes the file root (resolves '..' and absolute paths)", async () => {
+		const absolute = path.join(tmpDir, "abs-files");
+		process.env.DASHCAD_FILES_PATH = absolute;
+		vi.resetModules();
+		const { getFilesRootForTests, STEP_DIR } = await import("./paths");
+		expect(getFilesRootForTests()).toBe(absolute);
+		expect(STEP_DIR).toBe(path.join(absolute, "step"));
+	});
 });

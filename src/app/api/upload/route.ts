@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { enqueuePartConversion } from "@/lib/conversion-queue";
 import { addPart, generateId } from "@/lib/parts";
-import { GLB_DIR, STEP_DIR } from "@/lib/paths";
+import { GLB_DIR, STEP_DIR, stepPath } from "@/lib/paths";
 import {
 	MAX_STEP_BYTES,
 	parseTags,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 		// Generate unique filename
 		const id = generateId();
 		const safeFilename = `${id}${ext}`;
-		const filePath = path.join(STEP_DIR, safeFilename);
+		const filePath = stepPath(safeFilename);
 
 		// Ensure directories exist
 		if (!fs.existsSync(STEP_DIR)) {

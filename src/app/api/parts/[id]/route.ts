@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
-import path from "path";
 import { enrichPartWithResolvedConversionStatus } from "@/lib/conversion-status";
 import { getPart, deletePart, getStepPath, updatePart } from "@/lib/parts";
-import { GLB_DIR, THUMB_DIR } from "@/lib/paths";
+import { glbPath, thumbPath } from "@/lib/paths";
 import {
 	isValidPartId,
 	parseTagsArray,
@@ -52,19 +51,19 @@ export async function DELETE(
 	} catch {}
 
 	// Delete associated GLB preview
-	const glbPath = path.join(GLB_DIR, `${id}.glb`);
+	const glbAbs = glbPath(`${id}.glb`);
 	try {
-		if (fs.existsSync(glbPath)) {
-			fs.unlinkSync(glbPath);
+		if (fs.existsSync(glbAbs)) {
+			fs.unlinkSync(glbAbs);
 		}
 	} catch {}
 
 	// Delete associated thumbnail
 	if (part.thumbnailFilename) {
-		const thumbPath = path.join(THUMB_DIR, part.thumbnailFilename);
+		const thumbAbs = thumbPath(part.thumbnailFilename);
 		try {
-			if (fs.existsSync(thumbPath)) {
-				fs.unlinkSync(thumbPath);
+			if (fs.existsSync(thumbAbs)) {
+				fs.unlinkSync(thumbAbs);
 			}
 		} catch {}
 	}

@@ -1,7 +1,6 @@
 import "server-only";
 import fs from "fs";
-import path from "path";
-import { GLB_DIR } from "@/lib/paths";
+import { glbPath } from "@/lib/paths";
 import type { CadPart, ConversionStatus } from "@/types/part";
 
 /** Resolve status for API/UI; legacy parts without a field infer from GLB on disk. */
@@ -9,8 +8,7 @@ export function resolveConversionStatus(
 	part: CadPart,
 ): ConversionStatus | undefined {
 	if (part.conversionStatus) return part.conversionStatus;
-	const glbPath = path.join(GLB_DIR, `${part.id}.glb`);
-	if (fs.existsSync(glbPath)) return "ready";
+	if (fs.existsSync(glbPath(`${part.id}.glb`))) return "ready";
 	return undefined;
 }
 

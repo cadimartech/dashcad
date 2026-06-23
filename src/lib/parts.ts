@@ -3,7 +3,7 @@ import type { CadPart, ConversionStatus } from "@/types/part";
 import "server-only";
 import fs from "fs";
 import path from "path";
-import { STEP_DIR } from "@/lib/paths";
+import { stepPath } from "@/lib/paths";
 
 const CATALOG_DIR = path.join(process.cwd(), "catalog");
 const CATALOG_PATH =
@@ -169,7 +169,7 @@ export function updatePart(
 }
 
 export function getStepPath(filename: string): string {
-	return path.join(STEP_DIR, filename);
+	return stepPath(filename);
 }
 
 export function generateId(): string {

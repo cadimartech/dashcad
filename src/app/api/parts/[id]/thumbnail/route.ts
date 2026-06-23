@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
-import path from "path";
 import { getPart, updatePart } from "@/lib/parts";
-import { THUMB_DIR } from "@/lib/paths";
+import { THUMB_DIR, thumbPath } from "@/lib/paths";
 import {
 	isValidPartId,
 	THUMBNAIL_EXT,
@@ -40,7 +39,7 @@ export async function POST(
 		}
 
 		const thumbFilename = `${id}${THUMBNAIL_EXT}`;
-		fs.writeFileSync(path.join(THUMB_DIR, thumbFilename), buffer);
+		fs.writeFileSync(thumbPath(thumbFilename), buffer);
 
 		const updated = updatePart(id, { thumbnailFilename: thumbFilename });
 		if (!updated) {

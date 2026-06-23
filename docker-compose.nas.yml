@@ -3,8 +3,15 @@
 #
 # Uso en el NAS:
 #   1. docker login ghcr.io (con tu token de GitHub)
-#   2. docker compose -f docker-compose.nas.yml pull
-#   3. docker compose -f docker-compose.nas.yml up -d
+#   2. scripts/migrate-nas-storage.sh        # mueve archivos viejos a /storage/cad (idempotente)
+#   3. docker compose -f docker-compose.nas.yml pull
+#   4. docker compose -f docker-compose.nas.yml up -d
+#
+# Layout en el host:
+#   /ZimaOS-HD/AppData/dashcad/data/catalog/  -> SOLO parts.json (metadata)
+#   /storage/cad/step/                        -> binarios STEP subidos
+#   /storage/cad/glb/                         -> previews GLB (generados)
+#   /storage/cad/thumb/                       -> thumbnails
 #
 services:
   dashcad:
@@ -14,9 +21,10 @@ services:
       - "3000:3000"
     volumes:
       - /ZimaOS-HD/AppData/dashcad/data/catalog:/app/catalog
-      - /ZimaOS-HD/AppData/dashcad/data/files:/app/files
+      - /storage/cad:/app/files
     environment:
       - NODE_ENV=production
+      - DASHCAD_FILES_PATH=/app/files
     restart: unless-stopped
     healthcheck:
       test:

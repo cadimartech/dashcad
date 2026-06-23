@@ -10,6 +10,7 @@ services:
       - ${DASHCAD_FILES_PATH:-./data/files}:/app/files
     environment:
       - NODE_ENV=production
+      - DASHCAD_FILES_PATH=/app/files
     env_file:
       - path: .env
         required: false

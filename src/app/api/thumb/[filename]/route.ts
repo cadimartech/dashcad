@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { THUMB_DIR } from "@/lib/paths";
+import { thumbPath } from "@/lib/paths";
 import { isSafeThumbFilename } from "@/lib/upload-validation";
 
 export async function GET(
@@ -13,7 +13,7 @@ export async function GET(
 	if (!isSafeThumbFilename(safeName)) {
 		return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
 	}
-	const filePath = path.join(THUMB_DIR, safeName);
+	const filePath = thumbPath(safeName);
 
 	try {
 		if (!fs.existsSync(filePath)) {

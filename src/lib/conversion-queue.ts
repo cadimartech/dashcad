@@ -1,8 +1,7 @@
 import "server-only";
 import fs from "fs";
-import path from "path";
 import { getPart, getParts, updatePart } from "@/lib/parts";
-import { GLB_DIR, STEP_DIR } from "@/lib/paths";
+import { GLB_DIR, glbPath, stepPath } from "@/lib/paths";
 import { stepToGlb } from "@/lib/step-converter";
 
 const queue: string[] = [];
@@ -72,8 +71,8 @@ async function processPartConversion(partId: string): Promise<void> {
 
 	if (part.conversionStatus === "ready") return;
 
-	const stepPath = path.join(STEP_DIR, part.filename);
-	if (!fs.existsSync(stepPath)) {
+	const stepAbs = stepPath(part.filename);
+	if (!fs.existsSync(stepAbs)) {
 		updatePart(partId, {
 			conversionStatus: "failed",
 			conversionError: "STEP file missing on disk",
@@ -86,13 +85,13 @@ async function processPartConversion(partId: string): Promise<void> {
 		conversionError: undefined,
 	});
 
-	const glbPath = path.join(GLB_DIR, `${partId}.glb`);
+	const glbAbs = glbPath(`${partId}.glb`);
 
 	try {
 		if (!fs.existsSync(GLB_DIR)) {
 			fs.mkdirSync(GLB_DIR, { recursive: true });
 		}
-		await stepToGlb(stepPath, glbPath);
+		await stepToGlb(stepAbs, glbAbs);
 		updatePart(partId, {
 			conversionStatus: "ready",
 			conversionError: undefined,

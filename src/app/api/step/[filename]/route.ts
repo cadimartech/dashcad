@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import { STEP_DIR } from "@/lib/paths";
+import { stepPath } from "@/lib/paths";
 import { isSafeStepFilename } from "@/lib/upload-validation";
 
 export async function GET(
@@ -14,7 +14,7 @@ export async function GET(
 	if (!isSafeStepFilename(safeName)) {
 		return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
 	}
-	const filePath = path.join(STEP_DIR, safeName);
+	const filePath = stepPath(safeName);
 
 	if (!fs.existsSync(filePath)) {
 		return NextResponse.json({ error: "File not found" }, { status: 404 });

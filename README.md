@@ -25,6 +25,17 @@ Visor y catálogo de modelos CAD 3D. Sube archivos **STEP**, conviértelos a **G
 - **Tema oscuro/claro** — Theme toggle con guardado en localStorage
 - **Backfill** — Script para convertir partes existentes a GLB
 
+## Storage
+
+El app separa **metadata** de **archivos binarios** para que puedas montarlos en volúmenes, discos o servicios de almacenamiento distintos:
+
+| Qué | Variable env | Default | En el NAS |
+|---|---|---|---|
+| Metadata (`parts.json`) | `DASHCAD_CATALOG_PATH` (o `DASHCAD_DATA_PATH`) | `./data/catalog/parts.json` | `/ZimaOS-HD/AppData/dashcad/data/catalog` |
+| Archivos binarios (STEP/GLB/thumb) | `DASHCAD_FILES_PATH` | `./data/files` | `/storage/cad` |
+
+Si no defines `DASHCAD_FILES_PATH`, los archivos caen en `<DASHCAD_DATA_PATH>/{step,glb,thumb}/` (modo retrocompatible con la versión 0.1.x). El helper vive en `src/lib/paths.ts`.
+
 ## Empezar
 
 ### Desarrollo local
@@ -55,13 +66,25 @@ docker login ghcr.io -u TU_USUARIO_GITHUB
 
 Usa tu token de GitHub con permisos `read:packages`.
 
-2. Crear carpeta de datos:
+2. Crear la estructura de carpetas. Por defecto la app separa metadata y archivos:
 
 ```bash
-mkdir -p data/catalog
+# Metadata (parts.json)
+mkdir -p /ZimaOS-HD/AppData/dashcad/data/catalog
+
+# Archivos binarios (STEP, GLB, thumbnails) — separados del catálogo
+mkdir -p /storage/cad/{step,glb,thumb}
 ```
 
-3. Desplegar con Docker Compose:
+3. (Solo si vienes de una versión anterior) Migrar los archivos existentes:
+
+```bash
+bash scripts/migrate-nas-storage.sh
+```
+
+El script es idempotente: mueve `step/`, `glb/`, `thumb/` desde `data/catalog` hacia `/storage/cad` sin tocar el `parts.json`. Es seguro ejecutarlo varias veces.
+
+4. Desplegar con Docker Compose:
 
 ```bash
 docker compose -f docker-compose.nas.yml pull
@@ -80,13 +103,13 @@ docker compose -f docker-compose.nas.yml up -d
 #### Opción 2: Docker Compose local (con build)
 
 ```bash
-mkdir -p data/catalog
+mkdir -p data/catalog data/files/{step,glb,thumb}
 docker compose up -d --build
 docker compose logs -f
 docker compose down
 ```
 
-Los datos del catálogo se guardan en `./data/catalog` (solo `parts.json`, configurable con `DASHCAD_DATA_PATH`). Los archivos binarios (STEP, GLB, thumbnails) se guardan en `./data/files` (configurable con `DASHCAD_FILES_PATH`). Mantenerlos en carpetas separadas permite montar el catálogo y los archivos en volúmenes, discos o servicios de almacenamiento distintos.
+La metadata se guarda en `./data/catalog/parts.json` (configurable con `DASHCAD_DATA_PATH`) y los archivos binarios en `./data/files/{step,glb,thumb}` (configurable con `DASHCAD_FILES_PATH`). Mantenerlos separados permite montar el catálogo y los archivos en volúmenes, discos o servicios de almacenamiento distintos.
 
 #### Opción 3: Exportar imagen manualmente (sin GitHub Actions)
 
@@ -111,6 +134,8 @@ docker run -d \
   --name dashcad \
   -p 3000:3000 \
   -v "$(pwd)/data/catalog:/app/catalog" \
+  -v "$(pwd)/data/files:/app/files" \
+  -e DASHCAD_FILES_PATH=/app/files \
   --restart unless-stopped \
   dashcad:latest
 ```
